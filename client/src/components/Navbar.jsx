@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../context/AppContext';
+import { useContext } from 'react';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Changed to true to show logged-in state
+    const { isloggedIn, setIsLoggedIn } = useContext(AppContext);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     return (
@@ -34,7 +36,7 @@ const Navbar = () => {
                             </svg>
                             Support
                         </a>
-                        {isLoggedIn && (
+                        {isloggedIn && (
                             <button className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 transition duration-300 ease-in-out text-sm font-medium flex items-center">
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -46,7 +48,7 @@ const Navbar = () => {
 
                     {/* Right side - Login/User */}
                     <div className="flex items-center">
-                        {isLoggedIn ? (
+                        {isloggedIn ? (
                             <>
                                 {/* Desktop view - shows profile picture and name */}
                                 <div className="hidden md:flex items-center space-x-2">
@@ -120,7 +122,7 @@ const Navbar = () => {
                             </svg>
                             Support
                         </a>
-                        {isLoggedIn && (
+                        {isloggedIn && (
                             <button className="w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center">
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>

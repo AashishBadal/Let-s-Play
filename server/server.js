@@ -12,9 +12,13 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
+const allowedOrigins = [
+  "http://localhost:5173"
+];
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true }));
+app.use(cors({ credentials: true, origin: allowedOrigins }));
 
 app.get("/", (req, res) => {
   res.send("API WORKING");

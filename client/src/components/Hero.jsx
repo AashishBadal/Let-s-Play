@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AppContext } from '../context/AppContext';
 
 const HeroSection = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isloggedIn, setIsLoggedIn } = useContext(AppContext);
   const navigate = useNavigate();
 
   return (
@@ -27,7 +29,7 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="mt-10 flex justify-center gap-4">
-            {isLoggedIn ? (
+            {isloggedIn ? (
               <button
                 onClick={() => navigate('/tournaments')}
                 className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition-all duration-300 hover:scale-105 shadow-lg"

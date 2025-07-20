@@ -1,32 +1,54 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { AppContext } from "../context/AppContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const Login = () => {
-    const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const { backendUrl, setIsLoggedIn } = useContext(AppContext);
+  const [state, setState] = useState("Sign Up");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      axios.defaults.withCredentials = true;
+      if (state === "Sign Up") {
+        const { data } = await axios.post(`${backendUrl}/api/auth/register`, {
+          name,
+          email,
+          password,
+        });
+        if (data.success) {
+          setIsLoggedIn(true);
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        const { data } = await axios.post(`${backendUrl}/api/auth/login`, {
+          email,
+          password,
+        });
+        if (data.success) {
+          setIsLoggedIn(true);
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isLogin) {
-      console.log('Logging in with:', { email: formData.email, password: formData.password });
-      // Add your login logic here
-    } else {
-      console.log('Signing up with:', formData);
-      // Add your signup logic here
-    }
+  const toggleState = () => {
+    setState(state === "Sign Up" ? "Login" : "Sign Up");
   };
 
   return (
@@ -35,58 +57,67 @@ const Login = () => {
         <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
           <div className="p-8">
             <h2 className="text-2xl font-bold text-white text-center mb-6">
-              {isLogin ? 'Login' : 'Sign Up'}
+              {state}
             </h2>
-            
+
             <form onSubmit={handleSubmit}>
-              {!isLogin && (
+              {state === "Sign Up" && (
                 <div className="mb-4">
-                  <label htmlFor="name" className="block text-gray-300 text-sm font-medium mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-gray-300 text-sm font-medium mb-2"
+                  >
                     Name
                   </label>
                   <input
                     type="text"
                     id="name"
                     name="name"
-                    value={formData.name}
-                    onChange={handleChange}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
               )}
-              
+
               <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-300 text-sm font-medium mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-gray-300 text-sm font-medium mb-2"
+                >
                   Email
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
-              
+
               <div className="mb-6">
-                <label htmlFor="password" className="block text-gray-300 text-sm font-medium mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-gray-300 text-sm font-medium mb-2"
+                >
                   Password
                 </label>
                 <input
                   type="password"
                   id="password"
                   name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
-              
-              {isLogin && (
+
+              {state === "Login" && (
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
                     <input
@@ -95,13 +126,17 @@ const Login = () => {
                       type="checkbox"
                       className="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-600 rounded bg-gray-700"
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+                    <label
+                      htmlFor="remember-me"
+                      className="ml-2 block text-sm text-gray-300"
+                    >
                       Remember me
                     </label>
                   </div>
-                  
+
                   <div className="text-sm">
-                    <button onClick={() => navigate('/reset-password')}
+                    <button
+                      onClick={() => navigate("/reset-password")}
                       type="button"
                       className="font-medium text-blue-400 hover:text-blue-300"
                     >
@@ -110,25 +145,35 @@ const Login = () => {
                   </div>
                 </div>
               )}
-              
+
               <button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-150"
               >
-                {isLogin ? 'Login' : 'Sign Up'}
+                {state}
               </button>
             </form>
-            
+
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={toggleState}
                 className="text-sm text-gray-400 hover:text-gray-300"
               >
-                {isLogin ? (
-                  <>Don't have an account? <span className="font-medium text-blue-400 hover:text-blue-300">Sign up</span></>
+                {state === "Login" ? (
+                  <>
+                    Don't have an account?{" "}
+                    <span className="font-medium text-blue-400 hover:text-blue-300">
+                      Sign up
+                    </span>
+                  </>
                 ) : (
-                  <>Already have an account? <span className="font-medium text-blue-400 hover:text-blue-300">Login</span></>
+                  <>
+                    Already have an account?{" "}
+                    <span className="font-medium text-blue-400 hover:text-blue-300">
+                      Login
+                    </span>
+                  </>
                 )}
               </button>
             </div>
