@@ -2,14 +2,32 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { useContext } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isloggedIn, setIsLoggedIn, userData } = useContext(AppContext);
+  const { isloggedIn, userData } = useContext(AppContext);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  const { logout } = useContext(AppContext);
+  const { backendUrl,logout } = useContext(AppContext);
+
+  const sendVerificationOtp = async () => {
+    try {
+      axios.defaults.withCredentials = true; // Ensure cookies are sent with requests
+      const {data} = await axios.post(`${backendUrl}/api/auth/send-verify-otp`)
+      if (data.success) {
+        navigate("/email-verify");
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+     
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
 
   const handleLogout = () => {
     logout();
@@ -167,11 +185,11 @@ const Navbar = () => {
                         </a>
                         {console.log(userData)}
                         {!userData?.isAccountVerified && (
-                          <a
+                          <a 
                             href="#"
                             className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
-                            onClick={(e) => {
-                              e.preventDefault();
+                            onClick={() => {
+                              sendVerificationOtp()
                               setShowUserDropdown(false);
                             }}
                           >
@@ -324,8 +342,8 @@ const Navbar = () => {
                 {!userData?.isAccountVerified && (
                   <button
                     className="w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center"
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={() => {
+                      sendVerificationOtp();
                       setShowMobileMenu(false);
                     }}
                   >

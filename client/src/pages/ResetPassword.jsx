@@ -1,7 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Make sure to install react-router-dom if not already
+import axios from 'axios';
+import { useContext, useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { AppContext } from '../context/AppContext';
 
 const ForgotPassword = () => {
+  const {backendUrl} = useContext(AppContext);
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password, 4: Success
   const [formData, setFormData] = useState({
     email: '',
@@ -12,6 +16,14 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const inputRefs = useRef([]);
+
+  // Focus the first input when step changes to OTP
+  useEffect(() => {
+    if (step === 2 && inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, [step]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,61 +33,91 @@ const ForgotPassword = () => {
     }));
   };
 
+  const handleOtpChange = (e, index) => {
+    const value = e.target.value;
+    
+    // Only allow numbers and limit to 1 character
+    if (/^\d*$/.test(value)) {
+      const newOtp = formData.otp.split('');
+      newOtp[index] = value;
+      setFormData(prev => ({
+        ...prev,
+        otp: newOtp.join('')
+      }));
+      
+      // Auto focus to next input if a digit was entered
+      if (value && index < 5 && inputRefs.current[index + 1]) {
+        inputRefs.current[index + 1].focus();
+      }
+    }
+    
+    // Handle backspace
+    if (!value && index > 0 && inputRefs.current[index - 1]) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+  const handleOtpKeyDown = (e, index) => {
+    // Handle backspace when input is empty
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text/plain').slice(0, 6);
+    if (/^\d+$/.test(pasteData)) {
+      const pasteArray = pasteData.split('');
+      pasteArray.forEach((digit, i) => {
+        if (i < 6 && inputRefs.current[i]) {
+          inputRefs.current[i].value = digit;
+          const newOtp = formData.otp.split('');
+          newOtp[i] = digit;
+          setFormData(prev => ({
+            ...prev,
+            otp: newOtp.join('')
+          }));
+        }
+      });
+      // Focus the last input if paste was successful
+      if (pasteArray.length > 0 && pasteArray.length < 6 && inputRefs.current[pasteArray.length]) {
+        inputRefs.current[pasteArray.length].focus();
+      }
+    }
+  };
+
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    
     try {
-      // Simulate API call to send OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStep(2);
-    } catch (err) {
-      setError('Failed to send OTP. Please try again.');
-    } finally {
-      setIsLoading(false);
+      const {data} = await axios.post(`${backendUrl}/api/auth/send-reset-otp`, { email:formData.email })
+      data.success ? toast.success(data.message) : toast.error(data.message);
+      data.success && setStep(2);
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
   const handleSubmitOTP = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      // Simulate OTP verification
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (formData.otp.length !== 6) {
-        throw new Error('OTP must be 6 digits');
-      }
-      setStep(3);
-    } catch (err) {
-      setError(err.message || 'Invalid OTP. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const otpArray = inputRefs.current.map(e => e.value);
+    const otp = otpArray.join('');
+    setStep(3);
+  }
 
   const handleSubmitNewPassword = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    
     try {
-      if (formData.newPassword !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
+      const {data} = await axios.post(`${backendUrl}/api/auth/reset-password`,{email: formData.email, otp: formData.otp, newPassword: formData.newPassword, confirmPassword: formData.confirmPassword});
+      if (data.success) {
+        toast.success(data.message);
+        setStep(4); // Move to success step
+      } else {
+        toast.error(data.message);
       }
-      if (formData.newPassword.length < 8) {
-        throw new Error('Password must be at least 8 characters');
-      }
+    } catch (error) {
+      toast.error(error.message);
       
-      // Simulate password reset API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStep(4); // Move to success step
-    } catch (err) {
-      setError(err.message || 'Failed to reset password. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -122,19 +164,24 @@ const ForgotPassword = () => {
               <label htmlFor="otp" className="block text-sm font-medium text-gray-300 mb-2">
                 Enter OTP
               </label>
-              <input
-                type="text"
-                id="otp"
-                name="otp"
-                value={formData.otp}
-                onChange={handleChange}
-                maxLength="6"
-                pattern="\d{6}"
-                inputMode="numeric"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                autoFocus
-              />
+              <div className="flex justify-between space-x-2">
+                {[...Array(6)].map((_, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    maxLength="1"
+                    value={formData.otp[index] || ''}
+                    onChange={(e) => handleOtpChange(e, index)}
+                    onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                    onPaste={handlePaste}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    className="w-12 h-12 text-center text-xl bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                ))}
+              </div>
             </div>
             
             <div className="flex items-center justify-between">
