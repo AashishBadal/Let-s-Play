@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import TournamentRegisterModal from './RegisterForTournament';
 
 // Mock data for 30 tournaments
 const tournaments = Array.from({ length: 30 }, (_, i) => {
@@ -25,6 +26,7 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
 });
 
 const TournamentCard = ({ tournament }) => {
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const getStatusColor = () => {
     switch (tournament.status) {
       case 'Upcoming': return tournament.isAccepting ? 'bg-blue-500' : 'bg-gray-500';
@@ -103,19 +105,26 @@ const TournamentCard = ({ tournament }) => {
         </div>
         
         <button 
-          className={`w-full mt-4 py-2 px-4 rounded-md transition-colors duration-300 ${
-            tournament.isAccepting 
-              ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-              : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-          }`}
-          disabled={!tournament.isAccepting}
-        >
-          {tournament.status === 'Completed' 
-            ? 'View Results' 
-            : tournament.isAccepting 
-              ? 'Register Now' 
-              : 'Registration Closed'}
-        </button>
+        onClick={() => setShowRegisterModal(true)}
+        className={`w-full mt-4 py-2 px-4 rounded-md transition-colors duration-300 ${
+          tournament.isAccepting 
+            ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+            : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+        }`}
+        disabled={!tournament.isAccepting}
+      >
+        {tournament.status === 'Completed' 
+          ? 'View Results' 
+          : tournament.isAccepting 
+            ? 'Register Now' 
+            : 'Registration Closed'}
+      </button>
+        {showRegisterModal && (
+        <TournamentRegisterModal 
+          tournament={tournament} 
+          onClose={() => setShowRegisterModal(false)} 
+        />
+      )}
       </div>
     </div>
   );
