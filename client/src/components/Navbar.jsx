@@ -61,7 +61,7 @@ const Navbar = () => {
           {/* Middle - Navigation (hidden on mobile) */}
           <div className="hidden md:flex md:items-center md:space-x-6">
             {isloggedIn && (
-              <button className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 transition duration-300 ease-in-out text-sm font-medium flex items-center">
+              <button onClick={() => navigate("/be-an-organizer")} className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 transition duration-300 ease-in-out text-sm font-medium flex items-center">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
@@ -215,7 +215,7 @@ const Navbar = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {isloggedIn && (
               <>
-                <button className="w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center">
+                <button onClick={() => navigate("/be-an-organizer")} className="w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center">
                   <svg
                     className="w-4 h-4 mr-2"
                     fill="none"
