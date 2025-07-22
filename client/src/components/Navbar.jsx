@@ -11,23 +11,22 @@ const Navbar = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  const { backendUrl,logout } = useContext(AppContext);
+  const { backendUrl, logout } = useContext(AppContext);
 
   const sendVerificationOtp = async () => {
     try {
       axios.defaults.withCredentials = true; // Ensure cookies are sent with requests
-      const {data} = await axios.post(`${backendUrl}/api/auth/send-verify-otp`)
+      const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
       if (data.success) {
         navigate("/email-verify");
         toast.success(data.message);
       } else {
         toast.error(data.message);
       }
-     
     } catch (error) {
       toast.error(error.message);
     }
-  }
+  };
 
   const handleLogout = () => {
     logout();
@@ -61,46 +60,6 @@ const Navbar = () => {
 
           {/* Middle - Navigation (hidden on mobile) */}
           <div className="hidden md:flex md:items-center md:space-x-6">
-            <a
-              href="#"
-              className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition duration-300 flex items-center"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                ></path>
-              </svg>
-              Tournaments
-            </a>
-            <a
-              href="#"
-              className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition duration-300 flex items-center"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-                ></path>
-              </svg>
-              Support
-            </a>
             {isloggedIn && (
               <button className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 transition duration-300 ease-in-out text-sm font-medium flex items-center">
                 <svg
@@ -126,23 +85,15 @@ const Navbar = () => {
           <div className="flex items-center">
             {isloggedIn ? (
               <>
-                {/* Desktop view - shows profile picture and name */}
+                {/* Desktop view */}
                 <div className="hidden md:flex items-center space-x-2">
                   <div className="relative">
                     <button
                       onClick={() => setShowUserDropdown(!showUserDropdown)}
                       className="flex items-center space-x-2 focus:outline-none"
                     >
-                      {/* Profile picture */}
-                      <div className="h-8 w-8 rounded-full bg-indigo-500 overflow-hidden">
-                        <img
-                          src="https://randomuser.me/api/portraits/men/32.jpg"
-                          alt="Profile"
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
                       <span className="text-sm font-medium">
-                        {userData?.username || "Guest"}
+                        {"Hi, " + (userData?.username || "Guest")}
                       </span>
                       <svg
                         className="w-4 h-4"
@@ -163,33 +114,12 @@ const Navbar = () => {
                     {/* User dropdown menu */}
                     {showUserDropdown && (
                       <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setShowUserDropdown(false);
-                          }}
-                        >
-                          Profile
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setShowUserDropdown(false);
-                          }}
-                        >
-                          Settings
-                        </a>
-                        {console.log(userData)}
                         {!userData?.isAccountVerified && (
-                          <a 
+                          <a
                             href="#"
                             className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
                             onClick={() => {
-                              sendVerificationOtp()
+                              sendVerificationOtp();
                               setShowUserDropdown(false);
                             }}
                           >
@@ -283,44 +213,6 @@ const Navbar = () => {
       {showMobileMenu && (
         <div className="md:hidden bg-gray-800">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <a
-              href="#"
-              className="px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                ></path>
-              </svg>
-              Tournaments
-            </a>
-            <a
-              href="#"
-              className=" px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-                ></path>
-              </svg>
-              Support
-            </a>
             {isloggedIn && (
               <>
                 <button className="w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 flex items-center">
