@@ -65,7 +65,7 @@ const ViewApplicants = () => {
           setIsLoading(false)
         }, 800)
       } catch (error) {
-        toast.error('Failed to load applicants')
+        toast.error(error.message || 'Failed to load applicants')
         setIsLoading(false)
       }
     }

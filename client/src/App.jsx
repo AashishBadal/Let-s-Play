@@ -11,6 +11,7 @@ import TournamentCreationForm from './components/Organizer/AddTournament'
 import ViewTournaments from './components/Organizer/ViewTournaments'
 import ViewApplicants from './components/Organizer/ViewApplicants'
 import EditTournament from './components/Organizer/EditTournament'
+import TeamDetails from './components/Organizer/TeamDetails'
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
           <Route path="view-applicants/:tournamentId" element={<ViewApplicants />} />
           <Route path="edit-tournament/:id" element={<EditTournament />} />
         </Route>
+        <Route path="team-details/:id" element={<TeamDetails />} />
       </Routes>
     </div>
   )
