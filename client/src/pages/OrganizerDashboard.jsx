@@ -42,7 +42,7 @@ const OrganizerDashboard = () => {
             </li>
             <li>
               <NavLink 
-                to="view-applicants"
+                to="view-applicants/:id"
                 className={({ isActive }) => 
                   `block p-3 rounded-lg transition-all hover:bg-gray-700 ${isActive ? 'bg-gray-700 text-blue-400 font-medium' : 'text-gray-300'}`
                 }
