@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { FaUpload, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const OrganizerRegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -7,20 +9,25 @@ const OrganizerRegistrationForm = () => {
     email: '',
     password: '',
     contactNumber: '',
-    documentPhoto: null,
-    holdingDocumentPhoto: null
+    documentImage: null,
+    holdingDocumentImage: null
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'documentPhoto' || name === 'holdingDocumentPhoto') {
+    if (name === 'documentImage' || name === 'holdingDocumentImage') {
       setFormData({ ...formData, [name]: files[0] });
     } else {
       setFormData({ ...formData, [name]: value });
+    }
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
@@ -40,16 +47,16 @@ const OrganizerRegistrationForm = () => {
     if (!formData.contactNumber.trim()) {
       newErrors.contactNumber = 'Contact number is required';
     }
-    if (!formData.documentPhoto) {
-      newErrors.documentPhoto = 'Document photo is required';
+    if (!formData.documentImage) {
+      newErrors.documentImage = 'Document image is required';
     }
-    if (!formData.holdingDocumentPhoto) {
-      newErrors.holdingDocumentPhoto = 'Photo holding document is required';
+    if (!formData.holdingDocumentImage) {
+      newErrors.holdingDocumentImage = 'Photo holding document is required';
     }
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -58,20 +65,44 @@ const OrganizerRegistrationForm = () => {
     }
     
     setIsSubmitting(true);
-    // Submit form data to your API here
-    console.log('Form submitted:', formData);
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('password', formData.password);
+      formDataToSend.append('contactNumber', formData.contactNumber);
+      formDataToSend.append('documentImage', formData.documentImage);
+      formDataToSend.append('holdingDocumentImage', formData.holdingDocumentImage);
+
+      const response = await fetch('http://localhost:5000/api/organizers/register', {
+        method: 'POST',
+        body: formDataToSend,
+        credentials: 'include' // Important for cookies
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      toast.success('Registration successful!');
+      navigate('/dashboard'); // Redirect to dashboard after successful registration
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error(error.message || 'Registration failed. Please try again.');
+    } finally {
       setIsSubmitting(false);
-      alert('Registration successful!');
-    }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-purple-400">Tournament Organizer Registration</h1>
+          <h1 className="text-3xl font-extrabold text-purple-400">Organizer Registration</h1>
           <p className="mt-2 text-gray-400">Register to create and manage tournaments</p>
         </div>
 
@@ -161,19 +192,19 @@ const OrganizerRegistrationForm = () => {
 
           {/* Document Photo Upload */}
           <div>
-            <label htmlFor="documentPhoto" className="block text-sm font-medium text-gray-300">
+            <label htmlFor="documentImage" className="block text-sm font-medium text-gray-300">
               Identity Document (Government ID, Passport, etc.)
             </label>
             <div className="mt-1">
               <label
-                htmlFor="documentPhoto"
-                className={`flex flex-col items-center justify-center w-full py-6 border-2 border-dashed ${errors.documentPhoto ? 'border-red-500' : 'border-gray-600'} rounded-lg cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors`}
+                htmlFor="documentImage"
+                className={`flex flex-col items-center justify-center w-full py-6 border-2 border-dashed ${errors.documentImage ? 'border-red-500' : 'border-gray-600'} rounded-lg cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors`}
               >
                 <div className="flex flex-col items-center justify-center">
                   <FaUpload className="w-8 h-8 mb-2 text-purple-400" />
                   <p className="text-sm text-gray-300">
-                    {formData.documentPhoto ? (
-                      <span className="text-purple-300">{formData.documentPhoto.name}</span>
+                    {formData.documentImage ? (
+                      <span className="text-purple-300">{formData.documentImage.name}</span>
                     ) : (
                       <>
                         <span className="font-semibold">Click to upload</span> or drag and drop
@@ -183,33 +214,33 @@ const OrganizerRegistrationForm = () => {
                   <p className="text-xs text-gray-400 mt-1">PNG, JPG, PDF up to 5MB</p>
                 </div>
                 <input
-                  id="documentPhoto"
-                  name="documentPhoto"
+                  id="documentImage"
+                  name="documentImage"
                   type="file"
                   accept="image/*,.pdf"
                   onChange={handleChange}
                   className="hidden"
                 />
               </label>
-              {errors.documentPhoto && <p className="mt-1 text-sm text-red-400">{errors.documentPhoto}</p>}
+              {errors.documentImage && <p className="mt-1 text-sm text-red-400">{errors.documentImage}</p>}
             </div>
           </div>
 
           {/* Photo Holding Document Upload */}
           <div>
-            <label htmlFor="holdingDocumentPhoto" className="block text-sm font-medium text-gray-300">
+            <label htmlFor="holdingDocumentImage" className="block text-sm font-medium text-gray-300">
               Photo of You Holding the Document
             </label>
             <div className="mt-1">
               <label
-                htmlFor="holdingDocumentPhoto"
-                className={`flex flex-col items-center justify-center w-full py-6 border-2 border-dashed ${errors.holdingDocumentPhoto ? 'border-red-500' : 'border-gray-600'} rounded-lg cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors`}
+                htmlFor="holdingDocumentImage"
+                className={`flex flex-col items-center justify-center w-full py-6 border-2 border-dashed ${errors.holdingDocumentImage ? 'border-red-500' : 'border-gray-600'} rounded-lg cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors`}
               >
                 <div className="flex flex-col items-center justify-center">
                   <FaUpload className="w-8 h-8 mb-2 text-purple-400" />
                   <p className="text-sm text-gray-300">
-                    {formData.holdingDocumentPhoto ? (
-                      <span className="text-purple-300">{formData.holdingDocumentPhoto.name}</span>
+                    {formData.holdingDocumentImage ? (
+                      <span className="text-purple-300">{formData.holdingDocumentImage.name}</span>
                     ) : (
                       <>
                         <span className="font-semibold">Click to upload</span> or drag and drop
@@ -219,15 +250,15 @@ const OrganizerRegistrationForm = () => {
                   <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
                 </div>
                 <input
-                  id="holdingDocumentPhoto"
-                  name="holdingDocumentPhoto"
+                  id="holdingDocumentImage"
+                  name="holdingDocumentImage"
                   type="file"
                   accept="image/*"
                   onChange={handleChange}
                   className="hidden"
                 />
               </label>
-              {errors.holdingDocumentPhoto && <p className="mt-1 text-sm text-red-400">{errors.holdingDocumentPhoto}</p>}
+              {errors.holdingDocumentImage && <p className="mt-1 text-sm text-red-400">{errors.holdingDocumentImage}</p>}
             </div>
           </div>
 
@@ -242,7 +273,6 @@ const OrganizerRegistrationForm = () => {
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );
